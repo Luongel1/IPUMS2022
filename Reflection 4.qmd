@@ -1,0 +1,129 @@
+---
+title: "Reflection 4"
+author: 
+  - Group 8
+date: today
+date-format: long
+format: pdf
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+#| echo: false
+
+library(knitr)
+library(tidyverse)
+library(labelled)
+
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+ipums_extract <- read_csv("usa_00002.csv")
+
+ipums_extract <- 
+  ipums_extract |>
+  select(STATEICP, SEX, EDUCD) |>
+  to_factor(ipums_extract)
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+given_cali_respondent <- 391171
+cali_educd <- ipums_extract |>
+  filter(STATEICP == 71) |>
+  filter(EDUCD == 116)
+doctoral_degree_cali <- nrow(cali_educd)
+
+ipums_extract_summary <- 
+  ipums_extract |>
+  group_by(STATEICP) |>
+  rename(state_code = STATEICP) |>
+  summarise(actual_population = n(),
+            doctoral_degree_population = sum(EDUCD == 116)) |>
+  arrange(state_code) |>
+  mutate(
+    ratio_by_states =  doctoral_degree_population / doctoral_degree_cali,
+    estimated_population = ratio_by_states * given_cali_respondent
+  ) |>
+  select(state_code, doctoral_degree_population, actual_population, ratio_by_states, estimated_population)
+
+```
+# Instruction on data gathering
+
+1. Visit the IPUMS USA homepage https://usa.ipums.org/usa/, to access U.S. Census and American Community Survey microdata from 1850 to the present.
+
+2. Go to Online Tool for Analysis – Analyze Data Online.
+
+3. We are interested in accessing the 2022 ACS to examine “How many respondents were there in each state that had a doctoral degree as their highest educational attainment”. In the top right corner, go to Select Data.
+
+4. Under Select Source Variables, select the Sample to be from 2022 ACS. We selected the variables:
+- US2022A_YEAR
+- US2022A_SAMPLE
+- US2022A_SERIAL
+- US2022A_CBSERIAL
+- US2022A_HHWT
+- US2022A_CLUSTER
+- US2022A_STRATA
+- US2022A_GQ
+- US2022A_STATEICP
+- US2022A_PERNUM
+- US2022A_PERWT
+- US2022A_SEX
+- US2022A_EDUC (general)
+- US2022A_EDUCD (detailed)
+
+5. View your cart and click Create Data Extract.
+
+6. Check over your Samples and Variables by clicking the (show) option to ensure that you have enough variables for the desired exploration.
+
+7. Under ‘DATA FORMAT’, change to .csv (Comma delimited) and apply selections.
+
+8. Now we click Submit Extract. Under ‘DOWNLOAD DATA’, we should have the file ready for download. If an error has occurred, visit the ‘REVISE EXTRACT’ column and head back to step 6.
+
+9. Finally, we can extract the zip file and begin in R.
+
+# Overview of the ratio estimators approach
+
+In this reflection, we used Laplace's ratio estimator approach to estimate the population of each state in the U.S. Since the total number of respondents for California is provided, we used California as the "base."
+First, we estimated the ratio by dividing the number of people with doctoral degrees in each state by the number of people with doctoral degrees in California. Then, we multiplied these ratios by the total number of respondents in California to estimate the population of each state.
+
+# Estimates and Actual Number of Respondents
+
+```{r}
+#| label: tbl-esti-actual-resp
+#| tbl-cap: Estimates and Actual Number of Respondents
+#| warning: false
+#| message: false
+#| echo: false
+
+estimate_actual <- 
+  ipums_extract_summary |>
+  select(state_code, actual_population, estimated_population)
+
+estimate_actual |>
+    kable(
+    col.names = c("State Code", "Actual Population", "Estimated Population"),
+    digits = 4,
+    booktabs = TRUE,
+    linesep = ""
+  )
+```
+
+# Why they are different?
+
+1. We are assuming that the ratio between the number of respondents with doctoral degrees in California and the number of respondents in California is the same across all states, which is not true since local factors such as population demographics, educational opportunities, or economic conditions are different across states. 
+
+2. Sample size is  different for each state, hence the ratio is different
+
+3. Errors in data collection or reporting may lead to differences between estimated and actual count.
