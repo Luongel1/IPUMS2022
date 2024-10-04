@@ -6,7 +6,6 @@ date: today
 date-format: long
 format: pdf
 number-sections: true
-bibliography: references.bib
 ---
 
 ```{r}
