@@ -1,11 +1,17 @@
 ---
-title: "Reflection 4"
+title: "Analysis of ACS 2022"
 author: 
-  - Group 8
+  - Elizabeth Luong
+  - Abdullah Motasim 
+  - Taejun Um 
+  - Yuanting Han
+  - Ziyan Liu
 date: today
 date-format: long
+abstract: "This document outlines the steps for accessing the 2022 ACS data, offers a concise overview of the ratio estimators method, presents the estimated figures alongside the actual respondent numbers, and provides our interpretation of the discrepancies between these values."
 format: pdf
 number-sections: true
+bibliography: references.bib
 ---
 
 ```{r}
@@ -58,6 +64,9 @@ ipums_extract_summary <-
   select(state_code, doctoral_degree_population, actual_population, ratio_by_states, estimated_population)
 
 ```
+# Introduction
+This paper is written with the help of R [@citeR]. All the data are gathered from IPUMS USA [@ipumsusa]. The code sections are done with the help of tidyverse [@tidyverse], labelled [@labelled] and knitr [@knitr].
+
 # Instruction on data gathering
 
 1. Visit the IPUMS USA homepage https://usa.ipums.org/usa/, to access U.S. Census and American Community Survey microdata from 1850 to the present.
@@ -94,7 +103,8 @@ ipums_extract_summary <-
 
 # Overview of the ratio estimators approach
 
-In this reflection, we used Laplace's ratio estimator approach to estimate the population of each state in the U.S. Since the total number of respondents for California is provided, we used California as the "base."
+In this reflection, we used Laplace's ratio estimator approach to estimate the population of each state in the U.S. Since the total number of respondents for California is provided, we used California as the "base".
+
 First, we estimated the ratio by dividing the number of people with doctoral degrees in each state by the number of people with doctoral degrees in California. Then, we multiplied these ratios by the total number of respondents in California to estimate the population of each state.
 
 # Estimates and Actual Number of Respondents
@@ -113,7 +123,7 @@ estimate_actual <-
 estimate_actual |>
     kable(
     col.names = c("State Code", "Actual Population", "Estimated Population"),
-    digits = 4,
+    digits = 3,
     booktabs = TRUE,
     linesep = ""
   )
